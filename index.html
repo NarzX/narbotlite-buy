@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NarBot DC Lite v1 - By Xzero5</title>
+    <style>
+        :root {
+            --primary: #00e6ff;
+            --primary-glow: rgba(0, 230, 255, 0.4);
+            --bg-color: #050505;
+            --surface: #121212;
+            --surface-light: #1a1a1a;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --discord: #5865F2;
+        }
+        
+        .banner-wrapper {
+    width: 100%;
+    margin-bottom: -40px; /* Menarik profil sedikit ke atas agar overlap banner */
+    border-radius: 20px 20px 0 0;
+    overflow: hidden;
+}
+
+.banner {
+    width: 100%;
+    height: 150px; /* Sesuaikan tinggi banner sesuai selera */
+    object-fit: cover;
+    display: block;
+}
+
+/* Sedikit penyesuaian agar profil profil terlihat rapi di atas banner */
+.profile-wrapper {
+    position: relative;
+    z-index: 2;
+    background: var(--surface); /* Memberikan latar belakang agar tidak transparan */
+    padding: 5px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top, #112226 0%, transparent 40%);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ---------------------------------
+           LOADING SCREEN STYLES
+        ----------------------------------- */
+        #loader-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #020202; 
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader-img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            object-fit: cover;
+            margin-bottom: 25px;
+            animation: pulse-glow 1.5s infinite alternate;
+        }
+
+        .loader-bar-container {
+            width: 250px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        .loader-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+            border-radius: 10px;
+            animation: fill-bar 2s ease-in-out forwards;
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(1); box-shadow: 0 0 10px var(--primary-glow); }
+            100% { transform: scale(1.1); box-shadow: 0 0 30px var(--primary); }
+        }
+
+        @keyframes fill-bar {
+            0% { width: 0%; }
+            40% { width: 60%; }
+            80% { width: 80%; }
+            100% { width: 100%; }
+        }
+
+        /* ---------------------------------
+           MAIN CONTENT STYLES
+        ----------------------------------- */
+        .container {
+            background: linear-gradient(145deg, var(--surface), #0a0a0a);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px var(--primary-glow);
+            max-width: 600px;
+            width: 85%;
+            margin: 40px 0;
+            border: 1px solid rgba(0, 230, 255, 0.1);
+            text-align: center;
+            opacity: 0; 
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            display: none;
+        }
+
+        .container.loaded {
+            display: block; 
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .profile-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px auto;
+        }
+
+        .profile-pic {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+            box-shadow: 0 0 20px var(--primary-glow);
+            transition: transform 0.3s ease;
+        }
+
+        .profile-wrapper:hover .profile-pic {
+            transform: scale(1.05) rotate(5deg);
+        }
+
+        .verified-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: var(--primary);
+            color: #000;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 14px;
+            border: 2px solid var(--bg-color);
+        }
+
+        h1 {
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 10px 0 5px 0;
+            font-size: 2.2em;
+            text-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .dev-info {
+            color: var(--text-muted);
+            font-size: 0.9em;
+            margin-bottom: 25px;
+        }
+
+        .dev-info span {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .features-container {
+            text-align: left;
+            margin: 30px 0;
+        }
+
+        .features-container h3 {
+            color: #fff;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .features-container h3::before {
+            content: '';
+            width: 20px;
+            height: 3px;
+            background: var(--primary);
+            display: inline-block;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .features-list li {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            font-size: 0.95em;
+            line-height: 1.5;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .features-list li:hover {
+            background: rgba(0, 230, 255, 0.08);
+            transform: translateX(8px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .features-list li strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .price-tag {
+            background: rgba(0, 230, 255, 0.1);
+            display: inline-block;
+            padding: 10px 25px;
+            border-radius: 30px;
+            border: 1px solid var(--primary);
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--text-main);
+            margin: 20px 0 30px 0;
+            box-shadow: 0 0 20px var(--primary-glow) inset;
+        }
+
+        /* ---------------------------------
+           TOMBOL AKSI (BUY & TRY)
+        ----------------------------------- */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .buy-btn {
+            background: linear-gradient(90deg, var(--primary), #00b3cc);
+            color: #000;
+            border: none;
+            padding: 16px 40px;
+            font-size: 1.2em;
+            font-weight: 900;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+            box-shadow: 0 5px 20px var(--primary-glow);
+        }
+
+        .buy-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 230, 255, 0.6);
+            background: linear-gradient(90deg, #00b3cc, var(--primary));
+        }
+
+        .try-btn {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+        }
+
+        .try-btn:hover {
+            background: rgba(0, 230, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 230, 255, 0.2);
+        }
+
+        /* ---------------------------------
+           MODAL / POP-UP STYLES
+        ----------------------------------- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            opacity: 1;
+            animation: fadeInModal 0.3s forwards;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid var(--primary);
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 0 40px rgba(0, 230, 255, 0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+            text-align: center;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+
+        .video-container {
+            margin: 20px 0 10px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #333;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6);
+            background: #000;
+        }
+
+        video {
+            width: 100%;
+            display: block;
+        }
+
+        .video-lock-status {
+            font-size: 0.8em;
+            color: #ff4444;
+            margin-bottom: 15px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
+
+        /* Info Kredit Video (Untuk Modal Coba Bot) */
+        .credits-info {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid #888;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: left;
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        .credits-info p {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .credits-info strong {
+            color: #fff;
+        }
+
+        .payment-info {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #333;
+            text-align: left;
+        }
+
+        .payment-info p {
+            margin: 10px 0;
+            font-size: 1.1em;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed #333;
+            padding-bottom: 5px;
+        }
+
+        .payment-info p:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        /* Tombol WA / Discord di dalam Modal */
+        .action-link-btn {
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            text-decoration: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+
+        .btn-wa { background: #25D366; box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3); }
+        .btn-wa:hover { background: #128C7E; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37, 211, 102, 0.5); }
+        
+        .btn-discord { 
+            background: var(--discord); 
+            box-shadow: 0 5px 15px rgba(88, 101, 242, 0.3); 
+            display: none; /* Disembunyikan sampai video kelar */
+        }
+        .btn-discord:hover { background: #4752C4; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(88, 101, 242, 0.5); }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 1.2em;
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .close-btn:hover {
+            background: #ff4444;
+            color: #fff;
+            transform: rotate(90deg);
+        }
+
+        .hidden-at-start {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Animasi Loading -->
+    <div id="loader-wrapper">
+        <img src="narbot.jpg" alt="Loading NarBot..." class="loader-img" onerror="this.src='https://via.placeholder.com/90/1a1a1a/00e6ff?text=X5'">
+        <div class="loader-bar-container">
+            <div class="loader-bar"></div>
+        </div>
+    </div>
+
+    <!-- Konten Utama -->
+    <div class="container" id="mainContent">
+      <!-- Tambahkan ini tepat di bawah <div class="container"> -->
+<div class="banner-wrapper">
+    <img src="narbotbanner.jpg" alt="NarBot Banner" class="banner" onerror="this.style.display='none'">
+</div>
+
+        <div class="profile-wrapper">
+            <img src="narbot.jpg" alt="Xzero5" class="profile-pic" onerror="this.src='https://via.placeholder.com/100/1a1a1a/00e6ff?text=X5'">
+            <div class="verified-badge">✓</div>
+        </div>
+
+        <h1>NarBot DC Lite</h1>
+        <div class="dev-info">Versi 1.0 | Developer: <span>Xzero5</span></div>
+        <p style="color: var(--text-muted); line-height: 1.6; margin-bottom: 25px;">
+            Bot Discord multifungsi dengan engine API & yt-dlp, dirancang untuk performa ringan dengan kustomisasi penuh.
+        </p>
+        
+        <div class="features-container">
+            <h3>Top Features</h3>
+            <ul class="features-list">
+                <li><strong>🛡️ Moderasi Canggih</strong> Sistem keamanan lengkap: Kick, Ban, Mute, Warn, Clear Chat, hingga Slowmode.</li>
+                <li><strong>🎮 Interactive Games</strong> Hidupkan server dengan Tic Tac Toe, Suit, 8Ball, Coinflip, Lempar Koin, dan Roll Dadu.</li>
+                <li><strong>📝 Utilitas & Tools</strong> Fitur produktivitas: Pengingat (Remind), Kalkulator, Polling, Pengumuman Embed.</li>
+                <li><strong>⚙️ Info & Pengaturan Kustom</strong> Atur pesan Welcome/Goodbye, Setup Autorole, dan Profil User.</li>
+            </ul>
+        </div>
+        
+        <div class="price-tag">Rp 30.000</div>
+        
+        <div class="action-buttons">
+            <button class="buy-btn" onclick="openBuyModal()">Beli Source Code</button>
+            <button class="try-btn" onclick="openTryModal()">Coba Bot Sekarang</button>
+        </div>
+    </div>
+
+    <!-- MODAL 1: PEMBELIAN (Bebas Skip) -->
+    <div class="modal-overlay" id="buyModal">
+        <div class="modal-content">
+            <button class="close-btn" id="buyCloseBtn" onclick="closeBuyModal()">&times;</button>
+            <h2 style="color: var(--primary); margin-top: 0; font-size: 1.6em; text-transform: uppercase;">Checkout</h2>
+            
+            <div class="video-container">
+                <video id="buyVideo" controls preload="metadata">
+                    <source src="narbot.mp4" type="video/mp4">
+                    Browser Anda tidak mendukung elemen video.
+                </video>
+            </div>
+
+            <p style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 15px;">Silakan transfer ke salah satu e-wallet di bawah ini:</p>
+            
+            <div class="payment-info">
+                <p><strong>DANA</strong> <span style="color: var(--primary); font-family: monospace; font-size: 1.1em;">0895392440060</span></p>
+                <p><strong>GoPay</strong> <span style="color: var(--primary); font-family: monospace; font-size: 1.1em;">0895392440060</span></p>
+                <div style="text-align: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid #333;">
+                    <span style="color: #888; font-size: 0.9em;">Total Pembayaran</span><br>
+                    <strong style="color: #fff; font-size: 1.4em;">Rp 30.000</strong>
+                </div>
+            </div>
+
+            <a href="https://wa.me/62895392440060?text=Halo%20Xzero5,%20saya%20sudah%20transfer%20sebesar%20Rp30.000%20untuk%20pembelian%20Source%20Code%20NarBot%20DC%20Lite%20v1.%20Ini%20bukti%20transfernya." target="_blank" class="action-link-btn btn-wa" id="waLinkBtn">
+                <span>💬</span> Konfirmasi via WhatsApp
+            </a>
+        </div>
+    </div>
+
+    <!-- MODAL 2: COBA BOT (Anti Hack & Anti Speed) -->
+    <div class="modal-overlay" id="tryModal">
+        <div class="modal-content">
+            <button class="close-btn hidden-at-start" id="tryCloseBtn" onclick="closeTryModal()">&times;</button>
+            <h2 style="color: var(--primary); margin-top: 0; font-size: 1.6em; text-transform: uppercase;">Coba NarBot</h2>
+            
+            <div class="video-container">
+                <!-- Atribut noplaybackrate & disablePictureInPicture ditambahkan di sini -->
+                <video id="tryVideo" controls preload="metadata" controlsList="nodownload noplaybackrate" disablePictureInPicture>
+                    <source src="narbot2.mp4" type="video/mp4">
+                    Browser Anda tidak mendukung elemen video.
+                </video>
+            </div>
+
+            <div class="video-lock-status" id="tryLockStatus">
+                ⚠️ TONTON VIDEO HINGGA SELESAI UNTUK MEMBUKA LINK DISCORD
+            </div>
+
+            <div class="credits-info">
+                <p>🎬 Source video: <strong>merax401</strong></p>
+                <p>🎵 TikTok: <strong>narxxx_7</strong></p>
+            </div>
+
+            <a href="https://discord.gg/dhv4gDF9u" target="_blank" class="action-link-btn btn-discord hidden-at-start" id="discordLinkBtn">
+                <span>🎮</span> Join Server Discord
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Loading Screen
+        setTimeout(function() {
+            const loader = document.getElementById('loader-wrapper');
+            const mainContent = document.getElementById('mainContent');
+            if (loader && mainContent) {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    mainContent.classList.add('loaded');
+                }, 500);
+            }
+        }, 2200);
+
+        // KONTROL MODAL 1 (BELI)
+        const buyModal = document.getElementById('buyModal');
+        const buyVideo = document.getElementById('buyVideo');
+
+        function openBuyModal() {
+            buyModal.classList.add('show');
+            buyVideo.play().catch(() => {});
+        }
+
+        function closeBuyModal() {
+            buyModal.classList.remove('show');
+            setTimeout(() => { 
+                buyVideo.pause(); 
+                buyVideo.currentTime = 0; 
+            }, 300);
+        }
+
+        // KONTROL MODAL 2 (COBA BOT) - SUPER STRICT
+        const tryModal = document.getElementById('tryModal');
+        const tryVideo = document.getElementById('tryVideo');
+        const tryCloseBtn = document.getElementById('tryCloseBtn');
+        const tryLockStatus = document.getElementById('tryLockStatus');
+        const discordLinkBtn = document.getElementById('discordLinkBtn');
+        let tryWatchedTime = 0, tryFullyWatched = false;
+
+        function openTryModal() {
+            tryModal.classList.add('show');
+            if (!tryFullyWatched) {
+                tryCloseBtn.classList.add('hidden-at-start');
+                discordLinkBtn.classList.add('hidden-at-start');
+                tryLockStatus.style.display = 'block';
+                tryLockStatus.style.color = '#ff4444';
+                tryLockStatus.innerText = '⚠️ TONTON VIDEO HINGGA SELESAI UNTUK MEMBUKA LINK DISCORD';
+            }
+            tryVideo.play().catch(() => {});
+        }
+
+        // 1. Anti Klik Kanan di Video
+        tryVideo.addEventListener('contextmenu', e => e.preventDefault());
+
+        // 2. Anti Rubah Kecepatan Video (Force Normal Speed)
+        tryVideo.addEventListener('ratechange', () => {
+            if (tryVideo.playbackRate !== 1) {
+                tryVideo.playbackRate = 1;
+            }
+        });
+
+        // 3. Anti Geser Durasi Maju
+        tryVideo.addEventListener('timeupdate', () => { 
+            if (!tryVideo.seeking) tryWatchedTime = tryVideo.currentTime; 
+        });
+        
+        tryVideo.addEventListener('seeking', () => { 
+            // Toleransi sedikit dinaikkan jadi 0.5 detik biar nggak nyangkut karena lag browser
+            if (tryVideo.currentTime > tryWatchedTime + 0.5) {
+                tryVideo.currentTime = tryWatchedTime; 
+            }
+        });
+        
+        tryVideo.addEventListener('ended', () => {
+            tryFullyWatched = true;
+            tryCloseBtn.classList.remove('hidden-at-start');
+            discordLinkBtn.classList.remove('hidden-at-start');
+            discordLinkBtn.style.display = 'flex';
+            tryLockStatus.style.color = '#00e6ff';
+            tryLockStatus.innerText = '✓ SELESAI! SILAKAN KLIK TOMBOL DI BAWAH';
+        });
+
+        function closeTryModal() {
+            if (tryFullyWatched) {
+                tryModal.classList.remove('show');
+                setTimeout(() => { 
+                    tryVideo.pause(); 
+                    tryVideo.currentTime = 0; 
+                    tryWatchedTime = 0; 
+                    tryFullyWatched = false; 
+                }, 300);
+            }
+        }
+
+        // Window Clicks
+        window.onclick = function(event) {
+            if (event.target == buyModal) closeBuyModal();
+            if (event.target == tryModal && tryFullyWatched) closeTryModal();
+        }
+    </script>
+</body>
+</html>
